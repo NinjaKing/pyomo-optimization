@@ -1,5 +1,6 @@
 set N := A B C;
 set L := (A,B) (A,C) (B,A) (B,C) (C,A) (C,B);
+set R := (A,B) (B,C) (C,A);
 
 param p_l := 
 A 1

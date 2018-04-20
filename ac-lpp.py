@@ -1,5 +1,5 @@
+
 from pyomo.environ import *
-import numpy as np
 
 
 model = AbstractModel()
@@ -43,22 +43,32 @@ model.v_ub = Param(model.N) # upper bound
 model.theta = Var(model.N)
 
 # v : voltage magnitude
-model.v = Var(model.N)
+def v_bound(model, n):
+   return (model.v_lb[n], model.v_ub[n])
+model.v = Var(model.N, bounds=v_bound)
 
 # p_g : active generation
-model.p_g = Var(model.N)
+def p_g_bound(model, n):
+   return (model.p_g_lb[n], model.p_g_ub[n])
+model.p_g = Var(model.N, bounds=p_g_bound)
 
 # q_g : reactive generation
-model.q_g = Var(model.N)
+def q_g_bound(model, n):
+   return (model.q_g_lb[n], model.q_g_ub[n])
+model.q_g = Var(model.N, bounds=q_g_bound)
 
 # l : percentage load served 
 model.l = Var(model.N, bounds=(0, 1))
 
 # p : active power on line (n, m)
-model.p = Var(model.L)
+def p_bound(model, n, m):
+   return (- model.S[n,m], model.S[n,m])
+model.p = Var(model.L, bounds=p_bound)
 
 # q : reactive power on line (n, m)
-model.q = Var(model.L)
+def q_bound(model, n, m):
+   return (- model.S[n,m], model.S[n,m])
+model.q = Var(model.L, bounds=q_bound)
 
 
 ## Define objective ##
@@ -69,39 +79,13 @@ model.obj = Objective(rule=obj_rule, sense=maximize)
 
 
 ## Define constraint ##
-# active generation limit
-def p_g_bound_rule(model, n):
-    return model.p_g_lb[n] <= model.p_g[n] <= model.p_g_ub[n]
-model.p_g_limit = Constraint(model.N, rule=p_g_bound_rule)
-
-# reactive generation limit
-def q_g_bound_rule(model, n):
-    return model.q_g_lb[n] <= model.q_g[n] <= model.q_g_ub[n]
-model.q_g_limit = Constraint(model.N, rule=q_g_bound_rule)
-
-# voltage magnitude limit
-def v_bound_rule(model, n):
-    return model.v_lb[n] <= model.v[n] <= model.v_ub[n]
-model.v_limit = Constraint(model.N, rule=v_bound_rule)
-
-# active power bound
-def p_bound_rule(model, n, m):
-    return - model.S[n,m] <= model.p[n,m] <= model.S[n,m]
-model.p_limit = Constraint(model.L, rule=p_bound_rule)
-
-# reactive power bound
-def q_bound_rule(model, n, m):
-    return - model.S[n,m] <= model.q[n,m] <= model.S[n,m]
-model.q_limit = Constraint(model.L, rule=q_bound_rule)
-
-
 # flow conservation
 def flow_p_rule(model, n):
-    return model.p_g[n] - model.p_l[n] * model.l[n] <= sum(model.p[i,j] for (i,j) in model.L)
+    return model.p_g[n] - model.p_l[n] * model.l[n] <= sum(model.p[i,j] for (i,j) in model.L if i == n)
 model.flow_p = Constraint(model.N, rule=flow_p_rule)
 
 def flow_q_rule(model, n):
-    return model.q_g[n] - model.q_l[n] * model.l[n] <= sum(model.q[i,j] for (i,j) in model.L)
+    return model.q_g[n] - model.q_l[n] * model.l[n] <= sum(model.q[i,j] for (i,j) in model.L if i == n)
 model.flow_q = Constraint(model.N, rule=flow_q_rule)
 
 
@@ -123,3 +107,4 @@ model.reactive_power_flow = Constraint(model.L, rule=reactive_power_flow_rule)
 def thermal_limit_rule(model, n, m):
     return model.p[n,m]**2 + model.q[n,m]**2 <= model.S[n,m]**2
 model.thermal_limit = Constraint(model.L, rule=thermal_limit_rule)
+

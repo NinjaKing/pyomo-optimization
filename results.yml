@@ -8,7 +8,7 @@ Problem:
 - Lower bound: -inf
   Upper bound: inf
   Number of objectives: 1
-  Number of constraints: 45
+  Number of constraints: 24
   Number of variables: 27
   Sense: unknown
 # ----------------------------------------------------------
@@ -16,11 +16,11 @@ Problem:
 # ----------------------------------------------------------
 Solver: 
 - Status: ok
-  Message: Ipopt 3.7.1\x3a Optimal Solution Found
+  Message: Ipopt 3.11.1\x3a Optimal Solution Found
   Termination condition: optimal
   Id: 0
   Error rc: 0
-  Time: 0.062120914459228516
+  Time: 0.0468902587890625
 # ----------------------------------------------------------
 #   Solution Information
 # ----------------------------------------------------------
@@ -29,10 +29,10 @@ Solution:
   number of solutions displayed: 1
 - Gap: None
   Status: optimal
-  Message: Ipopt 3.7.1\x3a Optimal Solution Found
+  Message: Ipopt 3.11.1\x3a Optimal Solution Found
   Objective:
     obj:
-      Value: 7
+      Value: 4
   Variable:
     l[A]:
       Value: 1
@@ -41,51 +41,51 @@ Solution:
     l[C]:
       Value: 1
     p[A,B]:
-      Value: 0.3059428629661402
+      Value: 0.5773869799797259
     p[A,C]:
-      Value: 0.4926434356510754
+      Value: -0.04991754662000467
     p[B,A]:
-      Value: -0.12225929603899055
+      Value: -0.06201263934989928
     p[B,C]:
-      Value: 0.2980672760465901
+      Value: -0.21980717264005417
     p[C,A]:
-      Value: -0.2635118482903632
+      Value: 0.27643225352015227
     p[C,B]:
-      Value: -0.10873329861836047
+      Value: 0.18932694000359832
     p_g[A]:
-      Value: 2.0287076991079926
+      Value: 1.2538516753225866
     p_g[B]:
-      Value: 1.2888823002516874
+      Value: 1.3419524056596253
     p_g[C]:
-      Value: 2.0287076991079926
+      Value: 1.2224373961641775
     q[A,B]:
-      Value: -0.14017757845878942
+      Value: -0.24334415028885786
     q[A,C]:
-      Value: -0.06427796981750061
+      Value: -0.4030349755899901
     q[B,A]:
-      Value: 0.107664873337458
+      Value: 0.12461253364608041
     q[B,C]:
-      Value: 0.0420666119567072
+      Value: 0.04375145299885558
     q[C,A]:
-      Value: 0.20809265855363895
+      Value: 0.1146400874163101
     q[C,B]:
-      Value: -0.019953499720521475
+      Value: -0.04898067434232646
     q_g[A]:
-      Value: 2.3550344213347616
+      Value: 2.509155567498126
     q_g[B]:
-      Value: 2.3550344719634264
+      Value: 2.8776184972214303
     q_g[C]:
-      Value: 2.3550344213347616
+      Value: 2.8232713083282728
     theta[A]:
-      Value: -2.0297529241441574
+      Value: 0.31144915449356364
     theta[B]:
-      Value: -2.032277313586442
+      Value: -0.10887349918968664
     theta[C]:
-      Value: -2.0280133425084905
+      Value: -0.20257565530387636
     v[A]:
-      Value: 2.01048891429916
+      Value: 0.3042279500527998
     v[B]:
-      Value: 1.9962032243965793
+      Value: 0.13861723341941246
     v[C]:
-      Value: 1.9807237392917536
+      Value: 0.32679863682326465
   Constraint: No values
