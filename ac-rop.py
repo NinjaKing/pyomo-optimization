@@ -1,20 +1,9 @@
-
-# coding: utf-8
-
-# In[1]:
-
-
 from pyomo.environ import *
 
 
-# In[2]:
-
+FM = 1e100
 
 model = AbstractModel()
-
-
-# In[3]:
-
 
 ## Define sets ##
 # N : buses
@@ -24,15 +13,10 @@ model.L = Set(within=model.N*model.N, doc='Lines')
 # R : set of lines to repair
 model.R = Set(within=model.L, doc='Set of lines to repair')
 
-
-# In[4]:
-
-
-# K : set of [1,..,siz(R)]
-model.K = RangeSet(len(model.R))
-
-
-# In[5]:
+# K : set of [1,..,|R|]
+def k_init(model):
+    return range(1, len(model.R) + 1)
+model.K = Set(initialize=k_init)
 
 
 ## Define parameters ##
@@ -59,9 +43,6 @@ model.q_g_ub = Param(model.N) # upper bound
 # interval of voltage magnitude
 model.v_lb = Param(model.N) # lower bound
 model.v_ub = Param(model.N) # upper bound
-
-
-# In[6]:
 
 
 ## Define variables ##
@@ -103,17 +84,11 @@ def q_bound(model, n, m, k):
 model.q = Var(model.L, model.K, bounds=q_bound)
 
 
-# In[7]:
-
-
 ## Define objective ##
 # maximize the active load
 def obj_rule(model):
     return sum(sum(model.p_l[n] * model.l[n,k] for n in model.N) for k in model.K)
 model.obj = Objective(rule=obj_rule, sense=maximize)
-
-
-# In[8]:
 
 
 ## Define constraint ##
@@ -143,29 +118,39 @@ def m2_7_rule(model, k, n):
     return model.q_g[n,k] - model.q_l[n] * model.l[n,k] <= sum(model.q[i,j,k] for (i,j) in model.L if i == n)
 model.m2_7 = Constraint(model.K, model.N, rule=m2_7_rule)
 
-def m2_8_rule(model, k, n, m):
-    if model.z[n,m,k] == 0:
-        return Constraint.Skip
+def m2_8_1_rule(model, k, n, m):
     admit = model.v[n,k]**2 * model.g[n,m]         - model.v[n,k] * model.v[m,k] * model.g[n,m] * cos(model.theta[n,k] - model.theta[m,k])         - model.v[n,k] * model.v[m,k] * model.b[n,m] * sin(model.theta[n,k] - model.theta[m,k])
         
-    return model.p[n,m,k] == admit 
-model.m2_8 = Constraint(model.K, model.L, rule=m2_8_rule)
+    return model.p[n,m,k] - admit <= FM * (1 - model.z[n,m,k])
+model.m2_8_1 = Constraint(model.K, model.L, rule=m2_8_1_rule)
 
-def m2_9_rule(model, k, n, m):
-    if model.z[n,m,k] == 0:
-        return Constraint.Skip
+def m2_8_2_rule(model, k, n, m):
+    admit = model.v[n,k]**2 * model.g[n,m]         - model.v[n,k] * model.v[m,k] * model.g[n,m] * cos(model.theta[n,k] - model.theta[m,k])         - model.v[n,k] * model.v[m,k] * model.b[n,m] * sin(model.theta[n,k] - model.theta[m,k])
+        
+    return admit - model.p[n,m,k] <= FM * (1 - model.z[n,m,k])
+model.m2_8_2 = Constraint(model.K, model.L, rule=m2_8_2_rule)
+
+
+def m2_9_1_rule(model, k, n, m):
     admit = - model.v[n,k]**2 * model.b[n,m]         + model.v[n,k] * model.v[m,k] * model.b[n,m] * cos(model.theta[n,k] - model.theta[m,k])         - model.v[n,k] * model.v[m,k] * model.g[n,m] * sin(model.theta[n,k] - model.theta[m,k])
         
-    return model.q[n,m] == admit 
-model.m2_9 = Constraint(model.K, model.L, rule=m2_9_rule)
+    return  model.q[n,m,k] - admit <= FM * (1 - model.z[n,m,k])
+model.m2_9_1 = Constraint(model.K, model.L, rule=m2_9_1_rule)
 
-def m2_10_rule(model, k, n, m):
-    if model.z[n,m,k] == 1:
-        return Constraint.Skip
-    return model.p[n,m,k] == 0 and model.q[n,m,k] == 0
-model.m2_10 = Constraint(model.K, model.L, rule=m2_10_rule)
+def m2_9_2_rule(model, k, n, m):
+    admit = - model.v[n,k]**2 * model.b[n,m]         + model.v[n,k] * model.v[m,k] * model.b[n,m] * cos(model.theta[n,k] - model.theta[m,k])         - model.v[n,k] * model.v[m,k] * model.g[n,m] * sin(model.theta[n,k] - model.theta[m,k])
+        
+    return  admit - model.q[n,m,k] <= FM * (1 - model.z[n,m,k])
+model.m2_9_2 = Constraint(model.K, model.L, rule=m2_9_2_rule)
+
+def m2_10_1_rule(model, k, n, m):
+    return  model.p[n,m,k]**2 + model.q[n,m,k]**2 <= FM * model.z[n,m,k]
+model.m2_10_1 = Constraint(model.K, model.L, rule=m2_10_1_rule)
+
+def m2_10_2_rule(model, k, n, m):
+    return  - model.p[n,m,k]**2 - model.q[n,m,k]**2 <= FM * model.z[n,m,k]
+model.m2_10_2 = Constraint(model.K, model.L, rule=m2_10_2_rule)
 
 def m2_11_rule(model, k, n, m):
     return model.p[n,m,k]**2 + model.q[n,m,k]**2 <= model.S[n,m]**2
 model.m2_11 = Constraint(model.K, model.L, rule=m2_11_rule)
-
